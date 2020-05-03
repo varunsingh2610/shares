@@ -1,0 +1,734 @@
+
+from IPython.core.display import display, HTML
+display(HTML("<style>.container { width:90% !important; }</style>"))
+
+
+
+
+
+
+
+import pandas as pd
+
+df = pd.read_excel('/home/varun/Downloads/Sagar.xlsx', sheet_name='Sheet1')
+
+df['LAST NAME'].fillna('Ahirwar', inplace=True)
+
+for i in range(df.shape[0]):
+    if df['LAST NAME'][i] == ' ':
+        df['LAST NAME'][i] = 'Ahirwar'
+# df.dropna( inplace=True)
+# df.reindex()
+# df.isnull()
+
+df['MOBILE NO'].astype('int64')
+
+
+
+# df['FIRST NAME'] = 'Nan'
+# df['LAST NAME'] = 'Nan'
+df['PASSWORD'] = 'Nan'
+df['EMAIL'] = 'Nan'
+
+# for i in range(df.shape[0]):
+#     df['FIRST NAME'][i], df['LAST NAME'][i] = df['NAME'][i].strip().split(" ")
+    
+# df.drop(columns=['NAME'], inplace=True)
+
+df = df[['FIRST NAME','LAST NAME','AGE','M/F','MOBILE NO','PASSWORD','EMAIL']]
+
+for i in range(df.shape[0]):
+    df['PASSWORD'][i]= df['FIRST NAME'][i].strip().title()+df['LAST NAME'][i].strip().lower()+'@1234'
+    df['EMAIL'][i]= df['FIRST NAME'][i].strip().lower()+df['LAST NAME'][i].strip().lower()+'@yopmail.com'
+    
+df.head()
+
+
+
+
+
+
+
+
+
+
+from selenium import webdriver
+from selenium.webdriver.support.ui import Select
+import schedule
+import time
+import pandas as pd
+import re 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.command import Command
+
+profile = webdriver.FirefoxProfile()
+profile.add_extension("/home/varun/buster.xpi")
+
+
+
+
+
+
+
+
+
+
+
+
+# Create Email
+def createEmail(num):
+    
+    global yopmail
+    profile = webdriver.FirefoxProfile()
+    profile.add_extension("/home/varun/buster.xpi")
+    yopmail = webdriver.Firefox(profile)
+    yopmail.get("http://www.yopmail.com/en/")
+    WebDriverWait(yopmail, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="login"]')))
+    yopEmail = yopmail.find_element_by_xpath('//*[@id="login"]')
+    yopEmail.send_keys(df['FIRST NAME'][num].strip().lower()+df['LAST NAME'][num].strip().lower())
+
+    element = WebDriverWait(yopmail, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/center/div/div/div[3]/table[3]/tbody/tr/td[1]/table/tbody/tr[3]/td/div[1]/form/table/tbody/tr[1]/td[3]/input")))
+    element.click();
+# createEmail(num)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Register
+def register(num):
+    
+    global browser
+    profile = webdriver.FirefoxProfile()
+    profile.add_extension("/home/varun/buster.xpi")
+    browser = webdriver.Firefox(profile)
+    browser.get("https://diksha.gov.in/signup?client_id=portal&state=52d97856-44aa-441c-9ff7-444d4e1debcc&redirect_uri=https:%2F%2Fdiksha.gov.in%2Fresources%2F%3Fauth_callback%3D1&scope=openid&response_type=code&version=4&error_callback=https:%2F%2Fdiksha.gov.in%2Fauth%2Frealms%2Fsunbird%2Fprotocol%2Fopenid-connect%2Fauth")
+    browser.refresh()
+    time.sleep(2)
+    try: 
+    #     WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="districts"]')))
+        
+        browser.find_element_by_xpath('//*[@id="states"]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal[2]/sui-dimmer/div/div/div/div[2]/form/div[1]/sui-select/div[2]/sui-select-option[20]/span[2]').click()
+        time.sleep(2)
+        browser.find_element_by_xpath('//*[@id="districts"]').click()
+        time.sleep(1)
+        # Mandla
+#         browser.find_element_by_xpath('/html/body/sui-modal[2]/sui-dimmer/div/div/div/div[2]/form/div[2]/div/sui-select/div[3]/sui-select-option[28]/span[2]').click()
+        # Sagar
+        browser.find_element_by_xpath('/html/body/sui-modal[2]/sui-dimmer/div/div/div/div[2]/form/div[2]/div/sui-select/div[3]/sui-select-option[39]/span[2]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal[2]/sui-dimmer/div/div/div/div[3]/button').click()
+    except:
+        print("No District Dialog.")
+    time.sleep(1)
+    browser.find_element_by_xpath('//*[@id="email"]').click()
+    name = browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/form/div[1]/input")
+    email = browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/form/div[4]/input")
+    password = browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/form/div[5]/div/input")
+    repassword = browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/form/div[6]/input")
+
+    name.send_keys(df['FIRST NAME'][num].title()+ ' ' +df['LAST NAME'][num].title())
+    email.send_keys(df['EMAIL'][num])
+    password.send_keys(df['PASSWORD'][num])
+    repassword.send_keys(df['PASSWORD'][num])
+
+    browser.find_element_by_xpath('//*[@id="tncAccepted"]').click()
+    
+    
+    try:
+        element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/button')))
+        element.click();
+        
+    except:
+        browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/form/label").text == 'Your email address is already registered'
+        print(str(num)+" Done.")
+        browser.quit()
+    
+    try:
+        browser.find_element_by_tag_name('iframe')
+        frames = browser.find_elements_by_tag_name('iframe')
+        browser.switch_to.frame(frames[-1])
+        time.sleep(2)
+        browser.find_element_by_xpath('//*[@id="recaptcha-audio-button"]').click()
+        time.sleep(2)
+        browser.find_element_by_xpath('/html/body/div/div/div[3]/div').click()
+        browser.find_element_by_xpath('//*[@id="solver-button"]').click()
+        browser.switch_to.default_content()
+    except:
+        print("No Recaptcha on Register.")
+        try:
+            browser.switch_to.default_content()
+        except:
+            print("switch_to.default_content Failed.")
+
+# register(num)
+
+
+
+
+
+
+
+
+
+
+
+
+# Get OTP
+
+# yopmail.refresh()
+# # time.sleep(10)
+# alert = yopmail.switch_to.alert
+# alert.accept()
+# yopmail.switch_to.default_content()
+def getOTP(num):
+    global yopmail
+    profile = webdriver.FirefoxProfile()
+    profile.add_extension("/home/varun/buster.xpi")
+    yopmail = webdriver.Firefox(profile)
+    yopmail.get("http://www.yopmail.com/en/")
+    
+    WebDriverWait(yopmail, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="login"]')))
+    yopEmail = yopmail.find_element_by_xpath('//*[@id="login"]')
+    # driver.find_element_by_id('foo').clear()
+    yopEmail.clear()
+    yopEmail.send_keys(df['FIRST NAME'][num].strip().lower()+df['LAST NAME'][num].strip().lower())
+
+    try:
+        yopmail.find_element_by_xpath("/html/body/center/div/div/div[3]/table[3]/tbody/tr/td[1]/table/tbody/tr[3]/td/div[1]/form/table/tbody/tr[1]/td[4]/input").click()
+    except:
+        yopmail.find_element_by_xpath("/html/body/center/div/div/div[3]/table[3]/tbody/tr/td[1]/table/tbody/tr[3]/td/div[1]/form/table/tbody/tr[1]/td[3]/input").click()
+    
+    try:
+        yopmail.switch_to.window(yopmail.window_handles[1])
+        yopmail.close()
+        yopmail.switch_to.window(yopmail.window_handles[0])
+    except:
+        print("No new Window.")
+        
+    try:
+        frames = yopmail.find_elements_by_tag_name('iframe')
+        yopmail.switch_to.frame(frames[1])
+        yopmail.find_element_by_xpath('/html/body/div[2]/div[3]/div[1]/div/div/span/div[1]').click()
+        time.sleep(2)
+        yopmail.switch_to.default_content()
+        frames = yopmail.find_elements_by_tag_name('iframe')
+        yopmail.switch_to.frame(frames[-1])
+        time.sleep(2)
+        yopmail.find_element_by_xpath('//*[@id="recaptcha-audio-button"]').click()
+        time.sleep(2)
+        yopmail.find_element_by_xpath('/html/body/div/div/div[3]/div').click()
+        yopmail.find_element_by_xpath('//*[@id="solver-button"]').click()
+        yopmail.switch_to.default_content()
+        time.sleep(3)
+    except:
+        print("No Captcha on Email")
+        yopmail.switch_to.default_content()
+    
+    time.sleep(2)
+    iframe = yopmail.find_element_by_xpath("//iframe[@name='ifmail']")
+    yopmail.switch_to.frame(iframe)
+    time.sleep(2)
+    content = yopmail.find_element_by_xpath('//*[@id="mailmillieu"]/div[2]/table/tbody/tr/td[2]/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td/p').text
+        
+    OTP = content[41:47]
+    OTP = OTP.replace(".", "")
+    print(OTP)
+
+    enterotp = browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[1]/div/input")                                      
+    enterotp.send_keys(OTP)
+
+#     browser.find_element_by_css_selector('.button').click()
+    try:
+        browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input[2]").click()
+    except:
+        browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input").click()
+        
+   
+
+
+ 
+    WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="success-msg"]')))
+    browser.quit()
+    yopmail.quit()
+# getOTP(num)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+num = 145
+df['FIRST NAME'][num].lower()+df['LAST NAME'][num].lower()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# createEmail(num)
+register(num)
+
+try:
+    print(browser.execute(Command.STATUS))
+    try:
+        time.sleep(10)
+        browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[1]/div/input")
+        print("input found")
+    except:
+        browser.quit()
+        print("browser quit outside")
+        register(num)
+    try:
+        time.sleep(20)
+        getOTP(num)
+    except:
+        browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input[1]").click()
+        yopmail.quit()
+        time.sleep(10)
+        getOTP(num)
+except:
+    print("outside.")
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+failed = []
+for num in range(101, 201):
+    
+    try:
+        # createEmail(num)
+        register(num)
+        browser.execute(Command.STATUS)
+        time.sleep(10)
+        try:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[1]/div/input")
+        except:
+            browser.quit()
+            register(num)
+        try:
+            time.sleep(20)
+            getOTP(num)
+        except:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input[1]").click()
+            yopmail.quit()
+            time.sleep(10)
+            getOTP(num)
+        print(str(num)+ " success")
+    except:
+        print(str(num)+" failed")
+        failed.append(num)
+        try:
+            browser.quit()
+            yopmail.quit()
+        except:
+            pass
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+failedd = []
+for num in failed:
+    try:
+        # createEmail(num)
+        register(num)
+        browser.execute(Command.STATUS)
+        time.sleep(10)
+        try:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[1]/div/input")
+        except:
+            browser.quit()
+            register(num)
+        try:
+            time.sleep(20)
+            getOTP(num)
+        except:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input[1]").click()
+            yopmail.quit()
+            time.sleep(10)
+            getOTP(num)
+        print(str(num)+ " success")
+    except:
+        print(str(num)+" failed")
+        failedd.append(num)
+        try:
+            browser.quit()
+            yopmail.quit()
+        except:
+            pass
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+for num in failedd:
+    try:
+        # createEmail(num)
+        register(num)
+        browser.execute(Command.STATUS)
+        time.sleep(10)
+        try:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[1]/div/input")
+        except:
+            browser.quit()
+            register(num)
+        try:
+            time.sleep(20)
+            getOTP(num)
+        except:
+            browser.find_element_by_xpath("/html/body/sui-modal/sui-dimmer/div/div/div/div/div/div[2]/div/app-otp/form/div[2]/input[1]").click()
+            yopmail.quit()
+            time.sleep(10)
+            getOTP(num)
+        print(str(num)+ " success")
+    except:
+        print(str(num)+" failed")
+        try:
+            browser.quit()
+            yopmail.quit()
+        except:
+            pass
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+# Login
+def login(num):
+    global browser
+    browser = webdriver.Firefox()
+    browser.get("https://diksha.gov.in/help/getting-started/sign-in/")
+    browser.refresh()
+
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/header/nav/div/div[2]/ul/li[3]/a')))
+    element.click();
+
+    dikshaUsername = browser.find_element_by_xpath('//*[@id="username"]')
+    dikshaUsername.send_keys(df['EMAIL'][num])
+    dikshaPassword = browser.find_element_by_xpath('//*[@id="password"]')
+    dikshaPassword.send_keys(df['PASSWORD'][num])
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="login"]')))
+    element.click();
+
+    browser.get("https://diksha.gov.in/learn/course/do_312994107187167232185")
+
+    time.sleep(3)
+
+
+# Board
+
+    
+    try:
+        browser.find_element_by_xpath('//*[@id="board"]').click()
+        try:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[1]/div/div/sui-select/div[2]/sui-select-option[2]/span[2]').click()
+        except:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[1]/div/div/sui-select/div[3]/sui-select-option[2]/span[2]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+        browser.find_element_by_xpath('//*[@id="medium"]').click()
+        try:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[2]/div/div/sui-multi-select/div[2]/sui-select-option[2]/span[2]').click()
+        except:
+            browser.find_element_by_xpath('//*[@id="board"]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[1]/div/div/sui-select/div[2]/sui-select-option[2]/span[2]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+            browser.find_element_by_xpath('//*[@id="medium"]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[2]/div/div/sui-multi-select/div[2]/sui-select-option[2]/span[2]').click()
+
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+        browser.find_element_by_xpath('//*[@id="gradeLevel"]').click()
+        try:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[3]/div/div/sui-multi-select/div[2]/sui-select-option[3]/span[2]').click()
+        except:
+            browser.find_element_by_xpath('//*[@id="medium"]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[2]/div/div/sui-multi-select/div[2]/sui-select-option[2]/span[2]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[3]/div/div/sui-multi-select/div[2]/sui-select-option[3]/span[2]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+        browser.find_element_by_xpath('//*[@id="subject"]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[4]/div/div/sui-multi-select/div[2]/sui-select-option[4]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[3]/button').click() 
+    except:
+        print("Problem with Board.")
+
+    time.sleep(2)
+
+
+# District
+
+    
+    element = browser.find_element_by_xpath('//*[@id="districts"]')
+
+    if (element):
+        browser.find_element_by_xpath('//*[@id="districts"]').click()
+        time.sleep(1)
+        try:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[2]/div/sui-select/div[2]/sui-select-option[39]').click()
+        except:
+            browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/form/div[2]/div/sui-select/div[3]/sui-select-option[39]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[1]').click()
+        browser.find_element_by_xpath('/html/body/sui-modal/sui-dimmer/div/div/div/div[3]/button').click()
+
+
+
+# Join
+
+    
+    try:
+        time.sleep(5)
+        browser.find_element_by_xpath("/html/body/app-root/div/ng-component/app-course-player/div/div/div/div/div/div/div/div[2]/app-batch-details/div/div[2]/div/div/div/div/button").click()
+        browser.find_element_by_xpath('//*[@id="enrollToCourse"]').click()
+    except:
+        print("No enroll.")
+
+
+
+# IFrame
+
+    
+    while(1):
+        try:
+            browser.find_element_by_tag_name('iframe')
+#             print("Found Frame")
+            break
+        except:
+            try:
+                browser.find_element_by_xpath("/html/body/app-root/div/ng-component/app-course-player/div/div/div/div/div/div/div/div[2]/app-batch-details/div/div[2]/div/div/div/div/button").click()
+                browser.find_element_by_xpath('//*[@id="enrollToCourse"]').click()
+            except:
+                pass
+#             print("waiting")
+            time.sleep(2)
+        
+    iframe = browser.find_element_by_tag_name('iframe')
+    browser.switch_to.frame(iframe)
+    time.sleep(15)
+    element = WebDriverWait(browser, 30).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[1]/div[1]/div/div/div[2]/div[3]/div/div/div[1]/div[2]/span/p")))
+    element.click()
+    browser.find_element_by_xpath('/html/body/div[2]/div/div[1]/div[1]/div/div/div[2]/div[3]/div/div/div[1]/div[2]').click()
+    browser.find_element_by_xpath('/html/body/div[10]/div/div/custom-next-navigation/div/a/img').click()
+
+    firstname = browser.find_element_by_xpath('//*[@id="ans-field1"]')
+    firstname.send_keys(df['FIRST NAME'][num])
+
+    lastname = browser.find_element_by_xpath('//*[@id="ans-field2"]')
+    lastname.send_keys(df['LAST NAME'][num])
+
+    gender = browser.find_element_by_xpath('//*[@id="ans-field3"]')
+    gender.send_keys(df['M/F'][num])
+
+    emailid = browser.find_element_by_xpath('//*[@id="ans-field4"]')
+    emailid.send_keys(df['EMAIL'][num])
+
+    mobilenumber = browser.find_element_by_xpath('//*[@id="ans-field5"]')
+    mobilenumber.send_keys(str(df['MOBILE NO'][num]))
+
+    browser.find_element_by_xpath('/html/body/div[10]/div/div/custom-next-navigation/div/a/img').click()
+
+
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[1]/div[1]/div/div/div[2]/div[3]/div/div/div[2]/div[2]")))
+    element.click();
+    browser.find_element_by_xpath('/html/body/div[10]/div/div/custom-next-navigation/div/a/img').click()
+
+
+    age = browser.find_element_by_xpath('//*[@id="ans-field1"]')
+    age.send_keys(str(df['AGE'][num]))
+
+    city = browser.find_element_by_xpath('//*[@id="ans-field2"]')
+    city.send_keys('Sagar')
+
+    state = browser.find_element_by_xpath('//*[@id="ans-field3"]')
+    state.send_keys('Madhya Pradesh')
+    browser.find_element_by_xpath('/html/body/div[10]/div/div/custom-next-navigation/div/a/img').click()
+
+
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[1]/div/div/div/div[3]/button[2]")))
+    element.click();
+
+
+    browser.switch_to.default_content()
+
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/sui-modal/sui-dimmer/div/div/div/div[2]/div/sui-rating/i[5]")))
+    element.click();
+
+    element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/sui-modal/sui-dimmer/div/div/div/div[3]/button")))
+    element.click();
+    
+    time.sleep(1)
+    browser.quit()
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+num = 101
+df['FIRST NAME'][num].lower()+df['LAST NAME'][num].lower()
+
+
+login(num)
+
+
+
+
+failed = []
+for num in range(101, 201):
+    try:
+        login(num)
+        print(str(num)+" OK!")
+        try:
+            browser.quit()
+        except:
+            print("couldn't quit.")
+    except:
+        try:
+            login(num)
+            print(str(num)+" OK!")
+        except:
+            print(str(num)+" failed")
+            failed.append(num)
+            browser.quit()
+            time.sleep(2)
+			
+			
+			
+			
+failedd = []
+for num in failed:
+    try:
+        login(num)
+        print(str(num)+" OK!")
+        try:
+            browser.quit()
+        except:
+            print("couldn't quit.")
+    except:
+        try:
+            login(num)
+            print(str(num)+" OK!")
+        except:
+            print(str(num)+" failed")
+            failed.append(num)
+            browser.quit()
+            time.sleep(2)
+			
+			
+			
+			
+			
+			
+			
+			
